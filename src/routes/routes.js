@@ -4,10 +4,8 @@ const articulos = require('../../models/articulos')
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
-const { type } = require('os')
-const { resourceLimits } = require('worker_threads')
 
-const carpetaUpload = path.join(__dirname, '../src/upload')
+const carpetaUpload = path.join(__dirname, '../upload')
 
 var storage = multer.diskStorage({
     destination: function(req, file, cb){
@@ -70,8 +68,7 @@ router.post('/inventario', upload, (req, res)=>{
 
 //editar
 router.get('/edit/:id', upload, async (req, res) =>{
-    const id= req.params.id
-
+    let id= req.params.id
     try{
         const articulo = await articulos.findById(id)
         if(articulo == null){
@@ -89,14 +86,15 @@ router.get('/edit/:id', upload, async (req, res) =>{
     }
     
 })
-router.post('/editar/:id', upload, async(req, res) => {
+router.post('/update/:id', upload, async(req, res) => {
     const id = req.params.id;
-    const nuevaImagen = ''
+    let nuevaImagen = ''
     if (req.file) {
-        nuevaImagen = req.file.filename
         try{
-            fs.unlinkSync('./upload/' + req.body.old_image)
+            if (!fs.existsSync(carpetaUpload)) {
+            fs.mkdirSync(carpetaUpload, { recursive: true });
         }
+    }
         catch(error){
             console.log(error)
         }     
@@ -131,30 +129,44 @@ router.post('/editar/:id', upload, async(req, res) => {
 });
 
 // eliminar
+router.get('/delete/:id', async (req, res) => {
+    const id = req.params.id;
+    try {
+        // Buscar el artículo antes de eliminarlo
+        const articulo = await articulos.findById(id);
+        if (!articulo) {
+            req.session.message = {
+                message: 'Artículo no encontrado',
+                type: 'danger'
+            };
+            return res.redirect('/inventario');
+        }
 
-router.get('/delete/:id', async(req, res)=>{
-    const id = req.params.id
-    try{
-        const articulo = await articulos.findByIdAndDelete(id)
-        if(articulo!= null && articulo.foto != ''){
-            try{
-                fs.unlinkSync('./upload/'+ resourceLimits.foto)
-            }
-            catch(error){
-                console.log(error)
+        // Si el artículo tiene una imagen asociada, eliminarla
+        if (articulo.foto && articulo.foto !== '') {
+            const imagePath = path.join(__dirname, '../upload', articulo.foto);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
             }
         }
+
+        // Eliminar el artículo de la base de datos
+        await articulos.findByIdAndDelete(id);
+
         req.session.message = {
-            message: 'Usuario eliminado correctamente!',
+            message: 'Artículo eliminado correctamente!',
             type: 'info'
-        }
-        res.redirect('/inventario')
-    }
-    catch(error){
-        res.json({
-            message: error.message,
+        };
+        res.redirect('/inventario');
+        
+    } catch (error) {
+        console.log('Error al eliminar el artículo:', error);
+        req.session.message = {
+            message: 'Error al eliminar el artículo',
             type: 'danger'
-        })
+        };
+        res.redirect('/inventario');
     }
-})
+});
+
 module.exports = router

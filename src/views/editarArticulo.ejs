@@ -18,15 +18,21 @@
 
                         <div class="mb-3">
                             <label for="foto" class="form-label">Foto del Artículo</label>
-                            <input type="file" class="form-control" name="foto" required>
-                            <img src="/<%= articulo.foto %>" width="100" class="img-thumbnail">
-                        </div>
+                            <!-- Input para subir nueva foto -->
+                            <input type="file" class="form-control" name="foto" id="foto">
 
-                        <input type="hidden" name="old_image" value="<%= articulo.foto %>">
+                            <!-- Muestra el nombre del archivo actual (solo lectura) -->
+                            <input type="text" class="form-control mt-2" id="foto_nombre" value="<%= articulo.foto %>" readonly>
+
+                            <!-- Campo oculto para enviar el nombre de la imagen actual si no se cambia -->
+                            <input type="hidden" name="old_image" value="<%= articulo.foto %>">
+                            <!-- Vista previa de la imagen actual -->
+                            <img src="/upload/<%= articulo.foto %>" width="100" class="img-thumbnail mt-2">
+                        </div>
 
                         <div class="mb-3">
                             <label for="descripcion" class="form-label">Descripción</label>
-                            <textarea class="form-control" value="<%= articulo.descripcion %>" name="descripcion" rows="4" placeholder="Descripción del artículo" required></textarea>
+                            <textarea class="form-control" value="<%= articulo.descripcion %>" name="descripcion" rows="4" placeholder="Descripción del artículo" required><%= articulo.descripcion %></textarea>
                         </div>
 
                         <div class="mb-3">

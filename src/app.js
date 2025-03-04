@@ -5,8 +5,6 @@ const session = require('express-session')
 const router = require('./routes/routes')
 const path = require('path')
 
-
-
 const app = express()
 const PORT = process.env.PORT|| 4000
 
@@ -30,13 +28,14 @@ app.use((req, res, next)=>{
     next()
 }) 
 
-
 app.set('views', path.join(__dirname, './views'));
 app.engine("ejs", require("ejs").__express); 
 app.set('view engine', 'ejs')
 
 //Ver imagenes
-const carpetaUpload = path.join(__dirname, 'src/upload');
+
+const carpetaUpload = path.join(__dirname, './upload');
+
 app.use('/upload', express.static(carpetaUpload));
 
 app.use('', router)
